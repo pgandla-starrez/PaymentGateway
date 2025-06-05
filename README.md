@@ -2,7 +2,7 @@
 
 ## Objective
 
-The goal of this exercise is to assess your ability to understand existing code and write comprehensive unit tests for it. You will be working with a simplified API endpoint that processes payments. The existing code does **not** have any unit tests.
+The goal of this exercise is to assess your ability to understand existing code and write comprehensive unit tests for it. You will be working with a simplified API endpoint that processes payments. The existing code does not have any unit tests.
 
 ## Scenario
 

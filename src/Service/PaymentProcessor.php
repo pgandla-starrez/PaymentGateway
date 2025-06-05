@@ -27,16 +27,7 @@ class PaymentProcessor
         $this->notificationService = $notificationService;
     }
 
-    /**
-     * Processes a payment request.
-     *
-     * @param array $paymentData Expected keys: 'amount', 'currency', 'cardNumber', 'expiryMonth', 'expiryYear', 'cvv', 'customerEmail'
-     * @return Order The processed and saved order.
-     * @throws ValidationException If input data is invalid.
-     * @throws GatewayException If payment gateway communication fails or payment is declined.
-     * @throws PDOException If there's a database issue saving the order.
-     * @throws \Throwable For any other unexpected errors.
-     */
+
     public function processPayment(array $paymentData): Order
     {
         $this->validatePaymentData($paymentData);
@@ -44,11 +35,9 @@ class PaymentProcessor
         $order = new Order(
             (float)$paymentData['amount'],
             (string)$paymentData['currency'],
-            (string)$paymentData['cardNumber'] // Simplified: storing raw card number
+            (string)$paymentData['cardNumber']
         );
         $order->setStatus('pending_authorization');
-        // Save initial order state (optional, could also save only after successful payment)
-        // $this->orderRepository->save($order); 
 
         try {
             $cardDetails = [
@@ -58,7 +47,6 @@ class PaymentProcessor
                 'cvv' => (string)$paymentData['cvv'],
             ];
 
-            // Step 1: Authorize payment
             $authResponse = $this->paymentGateway->authorizePayment(
                 $order->getAmount(),
                 $order->getCurrency(),
@@ -67,54 +55,41 @@ class PaymentProcessor
 
             $order->setGatewayTransactionId($authResponse['transactionId']);
             $order->setStatus('authorized');
-            // $this->orderRepository->save($order); // Update status
 
-            // Step 2: Capture payment (assuming auto-capture for this example)
             $captureResponse = $this->paymentGateway->capturePayment(
                 $authResponse['transactionId'],
                 $order->getAmount()
             );
-            
-            // Update order with capture details
+
             $order->setStatus('completed');
-            // Potentially store capture ID: $order->setGatewayCaptureId($captureResponse['captureId']);
             $persistedOrder = $this->orderRepository->save($order);
 
-            // Step 3: Send notification
             try {
                 $this->notificationService->sendPaymentConfirmation($persistedOrder, (string)$paymentData['customerEmail']);
             } catch (\Exception $e) {
-                // Log notification failure but don't let it fail the payment process itself
-                // error_log("Failed to send payment confirmation for order {" . $persistedOrder->getId() . "}: " . $e->getMessage());
             }
 
             return $persistedOrder;
 
         } catch (GatewayException $e) {
             $order->setStatus('failed_gateway');
-            if ($order->getId()) { // If order was saved before, update its status
+            if ($order->getId()) {
                 $this->orderRepository->save($order);
             }
-            throw $e; // Re-throw for controller to handle
+            throw $e;
         } catch (PDOException $e) {
-            // If DB error occurs after successful gateway interaction, this is problematic.
-            // A real system would need robust retry/reconciliation or refund logic.
-            $order->setStatus('failed_internal_db'); 
-            // Potentially log $e->getMessage() with order details
-            throw $e; // Re-throw for controller to handle
+            $order->setStatus('failed_internal_db');
+            throw $e;
         } catch (\Throwable $e) {
             $order->setStatus('failed_unexpected');
             if ($order->getId()) {
                  $this->orderRepository->save($order);
             }
-            throw $e; // Re-throw
+            throw $e;
         }
     }
 
-    /**
-     * Validates the incoming payment data.
-     * @throws ValidationException
-     */
+
     private function validatePaymentData(array $data): void
     {
         $errors = [];
@@ -124,7 +99,7 @@ class PaymentProcessor
         if (empty($data['currency']) || !is_string($data['currency']) || strlen($data['currency']) !== 3) {
             $errors['currency'] = 'A valid 3-letter currency code is required.';
         }
-        if (empty($data['cardNumber']) || !is_string($data['cardNumber'])) { // Basic check
+        if (empty($data['cardNumber']) || !is_string($data['cardNumber'])) {
             $errors['cardNumber'] = 'Card number is required.';
         }
         if (empty($data['expiryMonth']) || !is_string($data['expiryMonth'])) {
@@ -144,4 +119,4 @@ class PaymentProcessor
             throw new ValidationException("Payment data validation failed.", $errors);
         }
     }
-} 
+}

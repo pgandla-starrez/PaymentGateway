@@ -32,16 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_SERVER['PATH_INFO'] ?? '/') === 
         $orderRepository = new OrderRepository($db);
         $paymentGateway = new ThirdPartyPaymentGateway();
         $notificationService = new NotificationService();
-        
+
         $paymentProcessor = new PaymentProcessor(
             $orderRepository,
             $paymentGateway,
             $notificationService
         );
-        
+
         $controller = new PaymentController($paymentProcessor);
         $apiResponse = $controller->processPayment($request);
-        
+
         $response = $apiResponse['data'];
         $statusCode = $apiResponse['statusCode'];
 
@@ -55,8 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_SERVER['PATH_INFO'] ?? '/') === 
         $statusCode = 400; // Bad request
         $response = ['status' => 'error', 'message' => $e->getMessage()];
     } catch (\Throwable $e) {
-        // Log the error in a real application
-        // error_log($e->getMessage() . "\n" . $e->getTraceAsString());
         $statusCode = 500;
         $response = ['status' => 'error', 'message' => 'An unexpected error occurred. '. $e->getMessage()];
     }
@@ -66,4 +64,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_SERVER['PATH_INFO'] ?? '/') === 
 }
 
 http_response_code($statusCode);
-echo json_encode($response); 
+echo json_encode($response);

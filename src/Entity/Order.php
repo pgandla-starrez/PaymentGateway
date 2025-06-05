@@ -19,9 +19,7 @@ class Order
     {
         $this->amount = $amount;
         $this->currency = $currency;
-        // In a real app, never store raw card number. This is for exercise simplification.
-        // Consider storing only last 4 digits or a token.
-        $this->cardNumber = $cardNumber; 
+        $this->cardNumber = $cardNumber;
         $this->status = 'pending';
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
@@ -49,8 +47,6 @@ class Order
 
     public function getCardNumber(): string
     {
-        // This is a simplified representation. 
-        // In real systems, card numbers are handled with extreme care (e.g., tokenization).
         return $this->cardNumber;
     }
 
@@ -91,11 +87,10 @@ class Order
             'id' => $this->id,
             'amount' => $this->amount,
             'currency' => $this->currency,
-            // 'cardNumber' => '**** **** **** ' . substr($this->cardNumber, -4), // Example of masking
             'status' => $this->status,
             'gatewayTransactionId' => $this->gatewayTransactionId,
             'createdAt' => $this->createdAt->format('Y-m-d H:i:s'),
             'updatedAt' => $this->updatedAt->format('Y-m-d H:i:s'),
         ];
     }
-} 
+}
