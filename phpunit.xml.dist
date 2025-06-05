@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         verbose="true"
+         stopOnFailure="false">
+
+    <testsuites>
+        <testsuite name="App Test Suite">
+            <directory suffix="Test.php">./tests/</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory>./src/Core</directory> <!-- Exclude core utilities if they are too simple or not the focus -->
+            <file>./src/Controller/PaymentController.php</file> <!-- Controller testing might be out of scope for this specific exercise -->
+        </exclude>
+        <report>
+            <clover outputFile="results/coverage/clover.xml"/>
+            <html outputDirectory="results/coverage/html" lowUpperBound="50" highLowerBound="90"/>
+            <text outputFile="php://stdout" showUncoveredFiles="false" showOnlySummary="true"/>
+        </report>
+    </coverage>
+
+    <php>
+        <!-- <ini name="memory_limit" value="-1"/> -->
+        <!-- <env name="APP_ENV" value="testing"/> -->
+        <!-- <env name="DB_CONNECTION" value="sqlite"/> -->
+        <!-- <env name="DB_DATABASE" value=":memory:"/> -->
+    </php>
+
+</phpunit> 
