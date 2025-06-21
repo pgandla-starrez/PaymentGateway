@@ -42,6 +42,4 @@ class OrderRepository
 
         return $order;
     }
-
-    // Potentially: findById, findByCriteria, etc.
 }

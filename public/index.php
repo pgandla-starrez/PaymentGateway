@@ -17,7 +17,7 @@ header("Content-Type: application/json");
 $response = ['status' => 'error', 'message' => 'Invalid request'];
 $statusCode = 400;
 
-// Basic routing
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_SERVER['PATH_INFO'] ?? '/') === '/payment') {
     try {
         $requestBody = json_decode(file_get_contents('php://input'), true);
@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_SERVER['PATH_INFO'] ?? '/') === 
 
         $request = new Request($requestBody ?? []);
 
-        // Dependencies (simplified instantiation)
-        $db = new Database(); // Simulated DB connection
+
+        $db = new Database();
         $orderRepository = new OrderRepository($db);
         $paymentGateway = new ThirdPartyPaymentGateway();
         $notificationService = new NotificationService();
@@ -44,19 +44,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_SERVER['PATH_INFO'] ?? '/') === 
 
         $response = $apiResponse['data'];
         $statusCode = $apiResponse['statusCode'];
-
     } catch (\App\Exception\ValidationException $e) {
-        $statusCode = 422; // Unprocessable Entity
+        $statusCode = 422;
         $response = ['status' => 'validation_error', 'message' => $e->getMessage(), 'errors' => $e->getErrors()];
     } catch (\App\Exception\GatewayException $e) {
-        $statusCode = 503; // Service Unavailable (or specific gateway error code)
+        $statusCode = 503;
         $response = ['status' => 'gateway_error', 'message' => $e->getMessage()];
     } catch (InvalidArgumentException $e) {
-        $statusCode = 400; // Bad request
+        $statusCode = 400;
         $response = ['status' => 'error', 'message' => $e->getMessage()];
     } catch (\Throwable $e) {
         $statusCode = 500;
-        $response = ['status' => 'error', 'message' => 'An unexpected error occurred. '. $e->getMessage()];
+        $response = ['status' => 'error', 'message' => 'An unexpected error occurred. ' . $e->getMessage()];
     }
 } else {
     $statusCode = 404;
